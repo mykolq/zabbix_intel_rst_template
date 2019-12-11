@@ -1,4 +1,5 @@
-var re=/ID:.*\nType:.*Disk.*\nDisk Type.*\nState:.*\nSize:.*\nSystem.*\nPCH.*\nUsage.*\nSerial.*/gmi;
+value=(value.match(/.*/gm)).toString();
+var re=/ID:\s*\S*Type:\s*\S*Disk Type:\s*\S*State:\s*\S*Size:\s*\S*\s\S*System Disk:\s*\S*Usage:\s*(\S*\s){1,2}Number:\s*\S*(?=(,,,))/gmi;
 var matches = value.match(re);
 var prejson = '';
 function obj(){

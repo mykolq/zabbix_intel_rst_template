@@ -1,4 +1,5 @@
-var re=/^Name:\s*.*(?=(\nRaid Level))/gmi;
+value=(value.match(/.*/gm)).toString()
+var re=/Name:\s*\S*Raid Level:\s*\S*(?=(,,,))/gmi;
 var matches = value.match(re);
 var prejson = '';
 function obj(){
@@ -19,5 +20,5 @@ myobj.add(temp[0],temp[1]);
     } 
 prejson= prejson + "," + (((JSON.stringify(myobj,null,space=0)).replace(/{"obj":{"Name":"\s*/gm,'{"LDNAME":"')).replace(/}$/,""));
 }
-json=("[" + prejson + "]").replace(/\[,/,"[")
+json=("[" + prejson + "]").replace(/\[,/,"[").replace(/\s{2,}/gm,""
 return json

@@ -1,5 +1,7 @@
-var re=/ID:.*\nType:.*Disk.*\nDisk Type.*\nState:.*\nSize:.*\nSystem.*\nPCH.*\nUsage.*\nSerial.*/gmi;
-var matches = value.match(re);
+value=(value.match(/.*/gm)).toString()
+var re=/ID:\s*\S*Type:\s*\S*Disk Type:\s*\S*State:\s*\S*Size:\s*\S*\s\S*System Disk:\s*\S*Usage:\s*(\S*\s){1,2}Number:\s*\S*(?=(,,,))/gmi;
+value=value.replace(/^\s*[\r\n]/gm,"")
+
 var prejson = '';
 function obj(){
     obj=new Object();
@@ -12,12 +14,12 @@ var myobj={};
 myobj = new obj();
 for(var i = 0; i < matches.length; i++)
 {
-    var str = matches[i].split('\n');
+    var str = matches[i].split(',,,');
     for(var x = 0; x < str.length; x++){
        var temp  = str[x].split(':');
 myobj.add(temp[0],temp[1]);
     } 
 prejson= prejson + "," + ((JSON.stringify(myobj,null,space=0)).replace(/"obj":{"ID":"\s*/gm,'"')).replace(/,"Type/,':{"Type');
 }
-json=("[" + prejson + "]").replace(/\[,/,"[")
-return json
+json=("[" + prejson + "]").replace(/\[,/,"[").replace(/\s{2,}/gm,"")
+return json.toString()
