@@ -27,4 +27,10 @@ servers, monitoring by this template
 
 * Add step for execution updatehostmacro.py script
 
+![action name and condition](https://github.com/mykolq/zabbix_intel_rst_template/blob/master/screenshots/execute_script.png?raw=true)
+
+
+
+
+
 
