@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <zabbix_export>
     <version>4.4</version>
-    <date>2019-12-17T10:56:56Z</date>
+    <date>2020-05-18T13:34:25Z</date>
     <groups>
         <group>
-            <name>Intel RST</name>
+            <name>Templates/storage controllers</name>
         </group>
     </groups>
     <templates>
         <template>
-            <template>Template_Intel_RST_with js</template>
-            <name>Template_Intel_RST_with js</name>
+            <template>Template Intel RST with js</template>
+            <name>Template Intel RST with js</name>
             <groups>
                 <group>
-                    <name>Intel RST</name>
+                    <name>Templates/storage controllers</name>
                 </group>
             </groups>
             <applications>
@@ -35,10 +35,10 @@
                     <name>Intel RST All Info</name>
                     <key>irst.allinfo[{$IRST_CLI}]</key>
                     <delay>{$STOR_CTRL_REQUEST_PERIOD}</delay>
-                    <history>3600</history>
+                    <history>{$INTERNAL_ITEMS_HISTORY_PERIOD}</history>
                     <trends>0</trends>
                     <value_type>TEXT</value_type>
-                    <description>Get all info from rst controller(cli path + I key)</description>
+                    <description>Get all info from rst controller(cli path + 'I' key)</description>
                     <applications>
                         <application>
                             <name>Intel RST internal items</name>
@@ -61,28 +61,21 @@
                     <preprocessing>
                         <step>
                             <type>JAVASCRIPT</type>
-                            <params>value=(value.match(/.*/gm)).toString()
+                            <params>value=(value.match(/.*/gm)).toString();
 var matches = value.match(/Name:\s*\S*Raid Level:\s*\d{1,}\S*Size:(\s*\S*){2}StripeSize:(\s*\S*){1,2}Num Disks:\s*\d{1,2}\S*State:\s*\w*/gmi);
-var prejson = '';
-function obj(){
-    obj=new Object();
-    this.add=function(key,value){
-        obj[&quot;&quot;+key+&quot;&quot;]=value;
-    }
-    this.obj=obj
-}
+var prejson = [];
+for(var i = 0; i &lt; matches.length; i++){
 var myobj={};
-myobj = new obj();
-for(var i = 0; i &lt; matches.length; i++)
-{
-    var str = matches[i].split(',,,');
-    for(var x = 0; x &lt; str.length; x++){
-       var temp  = str[x].split(':');
-myobj.add(temp[0],temp[1]);
-    } 
-prejson= prejson + &quot;,&quot; + ((JSON.stringify(myobj,null,space=0)).replace(/&quot;obj&quot;:{&quot;Name&quot;:&quot;\s*/gm,'&quot;')).replace(/,&quot;Raid/,':{&quot;Raid');
+var str = matches[i].split(/,{1,}/);
+for(var x = 0; x &lt; str.length; x++){
+var temp  = str[x].split(':');
+myobj[temp[0].trim('\t')] = temp[1].trim('\t');
+} 
+var Name = myobj['Name'];
+delete myobj['Name'];
+prejson.push(('&quot;' + Name + '&quot;:') + JSON.stringify(myobj,null,space=0));
 }
-json=(&quot;[&quot; + prejson + &quot;]&quot;).replace(/\[,/,&quot;[&quot;).replace(/\s{2,}/gm,&quot;&quot;).replace(/}},{/gm,&quot;},&quot;)
+json=(&quot;[{&quot; + prejson + &quot;}]&quot;);
 return json</params>
                         </step>
                     </preprocessing>
@@ -106,32 +99,24 @@ return json</params>
                     <preprocessing>
                         <step>
                             <type>JAVASCRIPT</type>
-                            <params>value=(value.match(/.*/gm)).toString()
-var re=/ID:\s*\S*Type:\s*\S*Disk Type:(\s*\S*){1,3}State:\s*\S*Size:\s*\S*\s\S*,,,(Free Size:\s*\S*\s\S*,,,)?System Disk:\s*\S*,,,(PCH Connected:\s\S*,,,)?Usage:\s*(\S*\s*){1,2},,,Serial Number:(\s*\S*\s*|\s*\S*:\d{1,2}\s*)(?=(,,,)?)/gmi;
-//value=value.replace(/^\s*[\r\n]/gm,&quot;&quot;)
+                            <params>value=(value.match(/.*/gm)).toString();
+var re=/(ID:\s*(\d{1,}-){3}\d{1,})(.*?)(Serial Number:(\s*\S*\s*|\s*\S*:\d{1,2}\s*))/gmi;
 var matches = value.match(re);
-var prejson = '';
-function obj(){
-    obj=new Object();
-    this.add=function(key,value){
-        obj[&quot;&quot;+key+&quot;&quot;]=value;
-    }
-    this.obj=obj
-}
+var prejson = [];
+for(var i = 0; i &lt; matches.length; i++){
 var myobj={};
-myobj = new obj();
-for(var i = 0; i &lt; matches.length; i++)
-{
-    var str = matches[i].split(',,,');
-    for(var x = 0; x &lt; str.length; x++){
-       var temp = str[x].replace(/(:\d{1,2})$/,'_nocorrectsn');
-       var temp  = temp.split(':');
-myobj.add(temp[0],temp[1]);
-    } 
-prejson= prejson + &quot;,&quot; + ((JSON.stringify(myobj,null,space=0)).replace(/&quot;obj&quot;:{&quot;ID&quot;:&quot;\s*/gm,'&quot;')).replace(/,&quot;Type/,':{&quot;Type');
+var str = matches[i].split(/,{1,}/);
+for(var x = 0; x &lt; str.length; x++){
+var temp = str[x].replace(/(:\d{1,2})$/,'_nocorrectsn');
+var temp  = temp.split(':');
+myobj[temp[0].trim('\t')] = temp[1].trim('\t');
+} 
+var ID = myobj['ID'];
+delete myobj['ID'];
+prejson.push(('&quot;' + ID + '&quot;:') + JSON.stringify(myobj,null,space=0));
 }
-json=(&quot;[&quot; + prejson + &quot;]&quot;).replace(/\[,/,&quot;[&quot;).replace(/\s{2,}/gm,&quot;&quot;).replace(/}},{/gm,&quot;},&quot;)
-return json.toString()</params>
+json=(&quot;[{&quot; + prejson + &quot;}]&quot;);
+return json</params>
                         </step>
                     </preprocessing>
                     <master_item>
@@ -146,6 +131,7 @@ return json.toString()</params>
                     <history>3600</history>
                     <trends>0</trends>
                     <value_type>TEXT</value_type>
+                    <description>JSON for lld of physical disks and for SMART template</description>
                     <applications>
                         <application>
                             <name>Intel RST internal items</name>
@@ -154,34 +140,28 @@ return json.toString()</params>
                     <preprocessing>
                         <step>
                             <type>JAVASCRIPT</type>
-                            <params>value=(value.match(/.*/gm)).toString()
-var re=/ID:\s*\S*Type:\s*\S*Disk Type:(\s*\S*){1,3}State:\s*\S*Size:\s*\S*\s\S*,,,(Free Size:\s*\S*\s\S*,,,)?System Disk:\s*\S*,,,(PCH Connected:\s\S*,,,)?Usage:\s*(\S*\s*){1,2},,,Serial Number:(\s*\S*\s*|\s\S*:\d{1,2}\s*)(?=(,,,)?)/gmi;
-//value=value.replace(/^\s*[\r\n]/gm,&quot;&quot;)
+                            <params>value=(value.match(/.*/gm)).toString();
+var re=/(ID:\s*(\d{1,}-){3}\d{1,})(.*?)(Serial Number:(\s*\S*\s*|\s*\S*:\d{1,2}\s*))/gmi;
 var matches = value.match(re);
-var prejson = '';
-function obj(){
-    obj=new Object();
-    this.add=function(key,value){
-        obj[&quot;&quot;+key+&quot;&quot;]=value;
-    }
-    this.obj=obj
-}
+var prejson = [];
+for(var i = 0; i &lt; matches.length; i++) {
 var myobj={};
-myobj = new obj();
-for(var i = 0; i &lt; matches.length; i++)
-{
-    var str = matches[i].split(',,,');
-    for(var x = 0; x &lt; str.length; x++){
-       var temp  = str[x].split(':');
-    if (temp[0].match(/ID.*|Serial Number.*/gm)){
-myobj.add(temp[0],temp[1]);
-    } 
+var str = matches[i].split(',,,');
+for(var x = 0; x &lt; str.length; x++){
+var temp  = str[x].split(':');
+if (temp[0].match(/ID.*|Serial Number.*/gm)){
+myobj[temp[0].trim('\t')] = temp[1].trim('\t');
+myobj['slotname_source'] = 'Intel RST';
+} 
 }
-prejson= prejson + &quot;,&quot; + ((JSON.stringify(myobj,null,space=0)).replace(/&quot;obj&quot;:/gm,'&quot;')).replace(/}$/,&quot;&quot;).replace(/{&quot;{/gm,'{');
-
+prejson.push(JSON.stringify(myobj,null,space=0));
 }
-json=(&quot;[&quot; + prejson + &quot;]&quot;).replace(/\[,/,&quot;[&quot;).replace(/\s{2,}/gm,&quot;&quot;).replace(/}},{/gm,&quot;},&quot;).replace(/ID&quot;:/gm,'SLOT&quot;:')
-return json.toString()</params>
+json=(&quot;[&quot; + prejson + &quot;]&quot;).replace(/ID&quot;:/gm,'SLOT&quot;:')
+return json</params>
+                        </step>
+                        <step>
+                            <type>DISCARD_UNCHANGED_HEARTBEAT</type>
+                            <params>{$PD_THROTTLING_HB_PERIOD}</params>
                         </step>
                     </preprocessing>
                     <master_item>
@@ -192,9 +172,10 @@ return json.toString()</params>
                     <name>RST cli path</name>
                     <key>wmi.get[root\cimv2,select DriverVersion from Win32_PnPSignedDriver WHERE DriverProviderName like '%Intel%' and DeviceClass like 'SCSIADAPTER' and not DeviceName like '%Ethernet Virtual Storage%']</key>
                     <delay>{$INTERNAL_ITEMS_REQUEST_PERIOD}</delay>
-                    <history>{$INTERNAL_ITEMS_HISTORY_PERIOD}</history>
+                    <history>7200</history>
                     <trends>0</trends>
                     <value_type>TEXT</value_type>
+                    <description>Path to needed version of utility (depends on driver version)</description>
                     <applications>
                         <application>
                             <name>Intel RST internal items</name>
@@ -210,8 +191,9 @@ var IrstVer = (DriverVer &lt; 170) ? '13_16_rstcli64.exe':
 (DriverVer &lt; 500) ? '4.6.0_rstcli64.exe':
 (DriverVer &lt; 503) ? '5.0.0_rstcli64.exe':
 (DriverVer &lt; 530) ? '5.0.3_rstcli64.exe':
+(DriverVer &lt; 540) ? '5.3.0_rstcli64.exe':
 (DriverVer &lt; 560) ? '5.6.0_rstcli64.exe':
-(DriverVer &lt; 620) ? 'IntelVROCCli.exe':
+(DriverVer &lt; 650) ? 'IntelVROCCli.exe':
 'rstcli64.exe';
 //var IrstCli = IrstPath + IrstVer;
 var IrstCli=IrstVer;
@@ -222,6 +204,7 @@ return IrstCli </params>
                         <trigger>
                             <expression>{diff()}=1 or {count(#2)}&lt;2</expression>
                             <name>{ITEM.VALUE}</name>
+                            <description>Changing if driver version for Irst changed or if it's first check</description>
                             <manual_close>YES</manual_close>
                             <tags>
                                 <tag>
@@ -250,7 +233,7 @@ return IrstCli </params>
                             <key>irst.raid.level.[{#LDNAME}]</key>
                             <delay>0</delay>
                             <history>{$LD_HISTORY_PERIOD}</history>
-                            <trends>{$LD_TRENDS_PERIOD}</trends>
+                            <trends>0</trends>
                             <applications>
                                 <application>
                                     <name>Intel RST Logical Disks</name>
@@ -276,7 +259,7 @@ return IrstCli </params>
                             <key>irst.raid.pdcount.[{#LDNAME}]</key>
                             <delay>0</delay>
                             <history>{$LD_HISTORY_PERIOD}</history>
-                            <trends>{$LD_TRENDS_PERIOD}</trends>
+                            <trends>0</trends>
                             <applications>
                                 <application>
                                     <name>Intel RST Logical Disks</name>
@@ -332,8 +315,8 @@ return IrstCli </params>
                                     <dependencies>
                                         <dependency>
                                             <name>Intel RST: Logical disk &quot;{#LDNAME}&quot; is &quot;{ITEM.VALUE}&quot;</name>
-                                            <expression>{Template_Intel_RST_with js:irst.raid.state.[{#LDNAME}].regexp({$LD_WARNING_SEVERITY_STATES},#1)}=1 and {Template_Intel_RST_with js:irst.raid.state.[{#LDNAME}].regexp({$LD_HIGH_SEVERITY_STATES},#3)}=0</expression>
-                                            <recovery_expression>{Template_Intel_RST_with js:irst.raid.state.[{#LDNAME}].regexp({$LD_RECOVERY_STATES})}=1</recovery_expression>
+                                            <expression>{Template Intel RST with js:irst.raid.state.[{#LDNAME}].regexp({$LD_WARNING_SEVERITY_STATES},#1)}=1 and {Template Intel RST with js:irst.raid.state.[{#LDNAME}].regexp({$LD_HIGH_SEVERITY_STATES},#3)}=0</expression>
+                                            <recovery_expression>{Template Intel RST with js:irst.raid.state.[{#LDNAME}].regexp({$LD_RECOVERY_STATES})}=1</recovery_expression>
                                         </dependency>
                                     </dependencies>
                                     <tags>
@@ -383,11 +366,11 @@ return IrstCli </params>
                     </item_prototypes>
                     <trigger_prototypes>
                         <trigger_prototype>
-                            <expression>{Template_Intel_RST_with js:irst.raid.state.[{#LDNAME}].regexp({$LD_HIGH_SEVERITY_STATES})}=1&#13;
-and {Template_Intel_RST_with js:irst.raid.level.[{#LDNAME}].last()}&gt;0 and&#13;
-{Template_Intel_RST_with js:irst.raid.pdcount.[{#LDNAME}].last()}&gt;0</expression>
+                            <expression>{Template Intel RST with js:irst.raid.state.[{#LDNAME}].regexp({$LD_HIGH_SEVERITY_STATES})}=1&#13;
+and {Template Intel RST with js:irst.raid.level.[{#LDNAME}].last()}&gt;0 and&#13;
+{Template Intel RST with js:irst.raid.pdcount.[{#LDNAME}].last()}&gt;0</expression>
                             <recovery_mode>RECOVERY_EXPRESSION</recovery_mode>
-                            <recovery_expression>{Template_Intel_RST_with js:irst.raid.state.[{#LDNAME}].regexp({$LD_RECOVERY_STATES})}=1</recovery_expression>
+                            <recovery_expression>{Template Intel RST with js:irst.raid.state.[{#LDNAME}].regexp({$LD_RECOVERY_STATES})}=1</recovery_expression>
                             <name>Intel RST: Logical disk &quot;{#LDNAME}&quot; is &quot;{ITEM.VALUE1}&quot;. LD level: {ITEM.VALUE2} Disks count: {ITEM.VALUE3}</name>
                             <priority>HIGH</priority>
                             <tags>
@@ -410,30 +393,21 @@ and {Template_Intel_RST_with js:irst.raid.level.[{#LDNAME}].last()}&gt;0 and&#13
                     <preprocessing>
                         <step>
                             <type>JAVASCRIPT</type>
-                            <params>value=(value.match(/.*/gm)).toString()
-var re=/Name:\s*\S*Raid Level:\s*\S*(?=(,,,))/gmi;
+                            <params>value=(value.match(/.*/gm)).toString();
+var re=/Name:\s*\S*Raid Level:\s*\d{1,}/gmi;
 var matches = value.match(re);
-var prejson = '';
-function obj(){
-    obj=new Object();
-    this.add=function(key,value){
-        obj[&quot;&quot;+key+&quot;&quot;]=value;
-    }
-    this.obj=obj
+var prejson = [];
+for(var i = 0; i &lt; matches.length; i++){
+myobj={};
+var str = matches[i].split(/,{1,}/);
+for(var x = 0; x &lt; str.length; x++){
+var temp  = str[x].split(':');
+myobj[temp[0].trim('\t')] = temp[1].trim('\t');
+} 
+prejson.push(JSON.stringify(myobj,null,space=0));
 }
-var myobj={};
-myobj = new obj();
-for(var i = 0; i &lt; matches.length; i++)
-{
-    var str = matches[i].split(',,,');
-    for(var x = 0; x &lt; str.length; x++){
-       var temp  = str[x].split(':');
-myobj.add(temp[0],temp[1]);
-    } 
-prejson= prejson + &quot;,&quot; + (((JSON.stringify(myobj,null,space=0)).replace(/{&quot;obj&quot;:{&quot;Name&quot;:&quot;\s*/gm,'{&quot;LDNAME&quot;:&quot;')).replace(/}$/,&quot;&quot;));
-}
-json=(&quot;[&quot; + prejson + &quot;]&quot;).replace(/\[,/,&quot;[&quot;).replace(/\s{2,}/gm,&quot;&quot;)
-return json.toString()</params>
+json=(&quot;[&quot; + prejson + &quot;]&quot;).replace(/Name&quot;:/g,'LDNAME&quot;:');
+return json</params>
                         </step>
                         <step>
                             <type>DISCARD_UNCHANGED_HEARTBEAT</type>
@@ -549,10 +523,11 @@ return json.toString()</params>
                     </item_prototypes>
                     <trigger_prototypes>
                         <trigger_prototype>
-                            <expression>{Template_Intel_RST_with js:irst.pd.state.[&quot;{#SLOT}&quot;].iregexp({$PD_INFORMATION_SEVERITY_STATES})}=1 and {Template_Intel_RST_with js:irst.pd.sn.[&quot;{#SLOT}&quot;].strlen()}&gt;0</expression>
+                            <expression>{Template Intel RST with js:irst.pd.state.[&quot;{#SLOT}&quot;].iregexp({$PD_INFORMATION_SEVERITY_STATES})}=1 and {Template Intel RST with js:irst.pd.sn.[&quot;{#SLOT}&quot;].strlen()}&gt;0</expression>
                             <recovery_mode>NONE</recovery_mode>
                             <name>Intel RST: Physical disk &quot;{#SLOT}&quot; is &quot;{ITEM.VALUE1}&quot;. Disk SN is &quot;{ITEM.VALUE2}&quot;</name>
                             <priority>INFO</priority>
+                            <manual_close>YES</manual_close>
                             <tags>
                                 <tag>
                                     <tag>SOURCE</tag>
@@ -561,16 +536,16 @@ return json.toString()</params>
                             </tags>
                         </trigger_prototype>
                         <trigger_prototype>
-                            <expression>{Template_Intel_RST_with js:irst.pd.state.[&quot;{#SLOT}&quot;].iregexp({$PD_WARNING_SEVERITY_STATES})}=1 and {Template_Intel_RST_with js:irst.pd.sn.[&quot;{#SLOT}&quot;].strlen()}&gt;0</expression>
+                            <expression>{Template Intel RST with js:irst.pd.state.[&quot;{#SLOT}&quot;].iregexp({$PD_WARNING_SEVERITY_STATES})}=1 and {Template Intel RST with js:irst.pd.sn.[&quot;{#SLOT}&quot;].strlen()}&gt;0</expression>
                             <recovery_mode>RECOVERY_EXPRESSION</recovery_mode>
-                            <recovery_expression>{Template_Intel_RST_with js:irst.pd.state.[&quot;{#SLOT}&quot;].iregexp({$PD_RECOVERY_STATES})}=1</recovery_expression>
+                            <recovery_expression>{Template Intel RST with js:irst.pd.state.[&quot;{#SLOT}&quot;].iregexp({$PD_RECOVERY_STATES})}=1</recovery_expression>
                             <name>Intel RST: Physical disk &quot;{#SLOT}&quot; is &quot;{ITEM.VALUE1}&quot;. Disk SN is &quot;{ITEM.VALUE2}&quot;</name>
                             <priority>WARNING</priority>
                             <dependencies>
                                 <dependency>
                                     <name>Intel RST: Physical disk &quot;{#SLOT}&quot; is &quot;{ITEM.VALUE}&quot;. Disk SN is &quot;{ITEM.VALUE2}&quot;</name>
-                                    <expression>{Template_Intel_RST_with js:irst.pd.state.[&quot;{#SLOT}&quot;].iregexp({$PD_HIGH_SEVERITY_STATES})}=1 and {Template_Intel_RST_with js:irst.pd.sn.[&quot;{#SLOT}&quot;].strlen()}&gt;0</expression>
-                                    <recovery_expression>{Template_Intel_RST_with js:irst.pd.state.[&quot;{#SLOT}&quot;].iregexp({$PD_RECOVERY_STATES})}=1</recovery_expression>
+                                    <expression>{Template Intel RST with js:irst.pd.state.[&quot;{#SLOT}&quot;].iregexp({$PD_HIGH_SEVERITY_STATES})}=1 and {Template Intel RST with js:irst.pd.sn.[&quot;{#SLOT}&quot;].strlen()}&gt;0</expression>
+                                    <recovery_expression>{Template Intel RST with js:irst.pd.state.[&quot;{#SLOT}&quot;].iregexp({$PD_RECOVERY_STATES})}=1</recovery_expression>
                                 </dependency>
                             </dependencies>
                             <tags>
@@ -581,9 +556,9 @@ return json.toString()</params>
                             </tags>
                         </trigger_prototype>
                         <trigger_prototype>
-                            <expression>{Template_Intel_RST_with js:irst.pd.state.[&quot;{#SLOT}&quot;].iregexp({$PD_HIGH_SEVERITY_STATES})}=1 and {Template_Intel_RST_with js:irst.pd.sn.[&quot;{#SLOT}&quot;].strlen()}&gt;0</expression>
+                            <expression>{Template Intel RST with js:irst.pd.state.[&quot;{#SLOT}&quot;].iregexp({$PD_HIGH_SEVERITY_STATES})}=1 and {Template Intel RST with js:irst.pd.sn.[&quot;{#SLOT}&quot;].strlen()}&gt;0</expression>
                             <recovery_mode>RECOVERY_EXPRESSION</recovery_mode>
-                            <recovery_expression>{Template_Intel_RST_with js:irst.pd.state.[&quot;{#SLOT}&quot;].iregexp({$PD_RECOVERY_STATES})}=1</recovery_expression>
+                            <recovery_expression>{Template Intel RST with js:irst.pd.state.[&quot;{#SLOT}&quot;].iregexp({$PD_RECOVERY_STATES})}=1</recovery_expression>
                             <name>Intel RST: Physical disk &quot;{#SLOT}&quot; is &quot;{ITEM.VALUE}&quot;. Disk SN is &quot;{ITEM.VALUE2}&quot;</name>
                             <priority>HIGH</priority>
                             <tags>
@@ -608,7 +583,7 @@ return json.toString()</params>
             <tags>
                 <tag>
                     <tag>APP</tag>
-                    <value>Intel RST disk controller</value>
+                    <value>Intel RST storage controller</value>
                 </tag>
             </tags>
             <macros>
@@ -638,24 +613,34 @@ return json.toString()</params>
                     <description>Logical disks recovery states (using in regex of triggers)</description>
                 </macro>
                 <macro>
+                    <macro>{$LD_THROTTLING_HB_PERIOD}</macro>
+                    <value>3h</value>
+                    <description>Logical disk throttling heartbeat period</description>
+                </macro>
+                <macro>
                     <macro>{$LD_WARNING_SEVERITY_STATES}</macro>
                     <value>Rebuilding|Verify and Fix</value>
                     <description>Logical disks warning severity states (using in regex of triggers)</description>
                 </macro>
                 <macro>
                     <macro>{$PD_HIGH_SEVERITY_STATES}</macro>
-                    <value>Missing|Failed</value>
+                    <value>Missing|Failed|Smart event triggered</value>
                     <description>Physical disks high severity states (using in regex of triggers)</description>
                 </macro>
                 <macro>
                     <macro>{$PD_INFORMATION_SEVERITY_STATES}</macro>
                     <value>need to set it</value>
-                    <description>Physical disks high severity states</description>
+                    <description>Physical disks information severity states</description>
                 </macro>
                 <macro>
                     <macro>{$PD_RECOVERY_STATES}</macro>
                     <value>Normal</value>
                     <description>Physicall disks recovery states (using in regex of triggers)</description>
+                </macro>
+                <macro>
+                    <macro>{$PD_THROTTLING_HB_PERIOD}</macro>
+                    <value>3h</value>
+                    <description>Physical disk throttling heartbeat period</description>
                 </macro>
                 <macro>
                     <macro>{$PD_WARNING_SEVERITY_STATES}</macro>
