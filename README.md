@@ -21,5 +21,7 @@ servers, monitoring by this template
 * Than you have to create macroses for login and password of this user. For example: {$ZBX_API_WRITER_USER}, {$ZBX_API_WRITER_PASSWORD}
 * Create action with name like "Change IRST cli version macros on host" and condition "Value of tag SOURCE equals Intel RST path"
 
+![action name and condition](https://github.com/mykolq/zabbix_intel_rst_template/blob/master/screenshots/2020-05-18_16-59-40.png?raw=true)
+
 
 
