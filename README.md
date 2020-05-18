@@ -35,6 +35,7 @@ servers, monitoring by this template
   * Ensure that your agent configuration has including section for folder or files and put irst.conf file in this folder or file
   or just copy content of irst.conf to your main zabbix agent configuration file
   * Unarchivate rst.zip content to any folder (for example c:\zabbix_agent\diskutils\rst) and check path for irst user parameter
+  * Restart zabbix client
   
   ## Enjoy
 
