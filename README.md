@@ -23,11 +23,20 @@ servers, monitoring by this template
 * Than you have to create macroses (i use global) for login and password of this user. Create macros for zabbix server URL.For example: {$ZBX_API_WRITER_USER}, {$ZBX_API_WRITER_PASSWORD}, {$ZBX_URL}. Zabbix url macros must equal something like that: http://zabbix_server_address/zabbix
 * Create action with name like "Change IRST cli version macros on host" and condition "Value of tag SOURCE equals Intel RST path"
 
-![action name and condition](https://github.com/mykolq/zabbix_intel_rst_template/blob/master/screenshots/2020-05-18_16-59-40.png?raw=true)
+![action name and condition](https://github.com/mykolq/zabbix_intel_rst_template/blob/master/screenshots/create_action.png?raw=true)
 
 * Add step for execution updatehostmacro.py script
 
-![action name and condition](https://github.com/mykolq/zabbix_intel_rst_template/blob/master/screenshots/execute_script.png?raw=true)
+![action step](https://github.com/mykolq/zabbix_intel_rst_template/blob/master/screenshots/execute_script.png?raw=true)
+
+
+  ### Windows client
+  
+  * Ensure that your agent configuration has including section for folder or files and put irst.conf file in this folder or file
+  or just copy content of irst.conf to your main zabbix agent configuration file
+  * Unarchivate rst.zip content to any folder (for example c:\zabbix_agent\diskutils\rst) and check path for irst user parameter
+  
+  ## Enjoy
 
 
 
